@@ -1,0 +1,40 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Aidbox client",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://test.aidbox.app/"
+    }
+  ],
+  "paths": {
+    "/__healthcheck": {
+      "get": {
+        "summary": "Checks if the server is running",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  },
+  "security": [
+    {
+      "BasicAuth": [
+        "base"
+      ]
+    }
+  ]
+}

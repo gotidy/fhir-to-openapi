@@ -1,0 +1,57 @@
+openapi: "3.0.3"
+info:
+  title: Aidbox client
+  version: "1.0"
+
+servers:
+  - url: https://test.aidbox.app/
+
+paths:
+  /__healthcheck:
+    get:
+      summary: Checks if the server is running
+      security: []
+      responses:
+        "200":
+          description: OK
+
+components:
+  # responses:
+  #   InvalidRequest:
+  #     description: Invalid request
+  #     content:
+  #       application/json:
+  #         schema:
+  #           $ref: "#/components/schemas/OperationOutcome"
+  #   Forbidden:
+  #     description: Forbidden
+  #     content:
+  #       application/json:
+  #         schema:
+  #           $ref: "#/components/schemas/OperationOutcome"
+  #   NotFound:
+  #     description: The specified resource was not found
+  #     content:
+  #       application/json:
+  #         schema:
+  #           $ref: "#/components/schemas/OperationOutcome"
+  #   Unauthorized:
+  #     description: Unauthorized
+  #     content:
+  #       application/json:
+  #         schema:
+  #           $ref: "#/components/schemas/OperationOutcome"
+  #   Conflict:
+  #     description: Conflict
+  #     content:
+  #       application/json:
+  #         schema:
+  #           $ref: "#/components/schemas/OperationOutcome"
+
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+
+security:
+  - BasicAuth: [base]
