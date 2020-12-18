@@ -4,4 +4,6 @@ package yaml
 // 	"github.com/ghodss/yaml"
 // )
 
-//type
+// type JSONToYamlWriter struct {
+// 	buf bytes.Buffer
+// }

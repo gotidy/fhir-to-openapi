@@ -1,13 +1,18 @@
 package main
 
 import (
-	"log"
 	"os"
+	"path/filepath"
+	"strings"
 
-	"github.com/gotidy/json-schema-to-openapi/pkg/generator"
+	"github.com/gotidy/fhir-to-openapi/pkg/generator"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 func main() {
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+
 	config := ParseFlags()
 
 	input := os.Stdin
@@ -15,7 +20,7 @@ func main() {
 		var err error
 		input, err = os.Open(config.Input)
 		if err != nil {
-			log.Fatalf("Opening file «%s»: %s", config.Input, err)
+			log.Fatal().Msgf("Opening file «%s»: %s", config.Input, err)
 		}
 		defer input.Close()
 	}
@@ -24,12 +29,19 @@ func main() {
 		var err error
 		output, err = os.Create(config.Output)
 		if err != nil {
-			log.Fatalf("Opening file «%s»: %s", config.Output, err)
+			log.Fatal().Msgf("Opening file «%s»: %s", config.Output, err)
 		}
 		defer output.Close()
 	}
 
-	if err := generator.New().Do(input, output); err != nil {
-		log.Fatalf("Generation OpenAPI: %s", err)
+	format := generator.JSON
+	if ext := strings.ToLower(filepath.Ext(config.Output)); ext == ".yaml" || ext == ".yml" {
+		format = generator.YAML
 	}
+
+	if err := generator.New().Do(input, output, format); err != nil {
+		log.Fatal().Msgf("Generation OpenAPI: %s", err)
+	}
+
+	log.Info().Msg("Successfully generated.")
 }
