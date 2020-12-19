@@ -11,3 +11,10 @@ gen:
 
 test:
 	go test -v ./...	
+
+run-gen:
+	go run ./cmd/fhir-to-openapi/... -i ./api/fhir.schema.json -o ./api/fhir.schema.oapi.yaml
+
+run-gen:
+	go run ./cmd/fhir-to-openapi/... -i ./api/fhir.schema.json -o ./api/fhir.schema.oapi.yaml
+	go generate ./...	

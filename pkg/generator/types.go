@@ -49,10 +49,9 @@ var mapper = NewTypeMapper("#/definitions/").
 	Add("markdown", &Type{Type: "string"}).
 	Add("oid", &Type{Type: "string"}).
 	Add("positiveInt", &Type{Type: "integer"}).
-	Add("time", &Type{Type: "string"}).
+	Add("time", &Type{Type: "string", Pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\\.[0-9]+)?$"}).
 	Add("unsignedInt", &Type{Type: "integer"}).
-	Add("uri", &Type{Type: "string"}).
-	Add("url", &Type{Type: "string"}).
-	Add("uuid", &Type{Type: "uuid"}).
-	Add("xhtml", &Type{Type: "string"}).
-	Add("unsignedInt", &Type{Type: "string"})
+	Add("uri", &Type{Type: "string", Format: "uri"}).
+	Add("url", &Type{Type: "string", Format: "uri"}).
+	Add("uuid", &Type{Type: "uuid", Format: "uuid"}).
+	Add("xhtml", &Type{Type: "string"})

@@ -12,6 +12,10 @@ import (
 	"github.com/gotidy/ptr"
 )
 
+const (
+	ResposePostfix = "Resp"
+)
+
 type Format int
 
 const (
@@ -81,6 +85,8 @@ func (g *Generator) String() string {
 }
 
 func (g *Generator) Do(schema io.Reader, output io.Writer, format Format) error {
+	g.initSwagger()
+
 	if err := g.encodeSchema(schema); err != nil {
 		return err
 	}
@@ -108,7 +114,7 @@ func (g *Generator) initSwagger() {
 			Description: ptr.String("Error"),
 			Content:     openapi3.NewContentWithJSONSchemaRef(openapi3.NewSchemaRef("#/components/schemas/OperationOutcome", nil)),
 		}},
-		"Bundle": &openapi3.ResponseRef{Value: &openapi3.Response{
+		"Bundle" + ResposePostfix: &openapi3.ResponseRef{Value: &openapi3.Response{
 			Description: ptr.String("OK"),
 			Content:     openapi3.NewContentWithJSONSchemaRef(openapi3.NewSchemaRef("#/components/schemas/Bundle", nil)),
 		}},
@@ -122,17 +128,100 @@ func (g *Generator) initSwagger() {
 			Required: true,
 			Schema: &openapi3.SchemaRef{
 				Value: &openapi3.Schema{
-					Type:                        "object",
+					Type: "object",
+					Properties: openapi3.Schemas{
+						// Parameters for all resources
+						"_id":          NewSchemaString(),
+						"_lastUpdated": NewSchemaString(),
+						"_tag":         NewSchemaString(),
+						"_profile":     NewSchemaString(),
+						"_security":    NewSchemaString(),
+						"_text":        NewSchemaString(),
+						"_content":     NewSchemaString(),
+						"_list":        NewSchemaString(),
+						"_has":         NewSchemaString(),
+						"_type":        NewSchemaString(),
+						// Search result parameters
+						"_sort":          NewSchemaString(),
+						"_count":         NewSchemaString(),
+						"_include":       NewSchemaString(),
+						"_revinclude":    NewSchemaString(),
+						"_summary":       NewSchemaString(),
+						"_total":         NewSchemaString(),
+						"_elements":      NewSchemaString(),
+						"_contained":     NewSchemaString(),
+						"_containedType": NewSchemaString(),
+					},
 					AdditionalPropertiesAllowed: ptr.Bool(true),
 				},
 			},
 		}},
+		// "_id": &openapi3.ParameterRef{Value: &openapi3.Parameter{
+		// 	Name:     "_id",
+		// 	In:       "query",
+		// 	Required: false,
+		// 	Schema:   &openapi3.SchemaRef{Value: &openapi3.Schema{Type: "string"}},
+		// }},
+		// "_lastUpdated": &openapi3.ParameterRef{Value: &openapi3.Parameter{
+		// 	Name:     "_lastUpdated",
+		// 	In:       "query",
+		// 	Required: false,
+		// 	Schema:   &openapi3.SchemaRef{Value: &openapi3.Schema{Type: "string"}},
+		// }},
+		// "_tag": &openapi3.ParameterRef{Value: &openapi3.Parameter{
+		// 	Name:     "_tag",
+		// 	In:       "query",
+		// 	Required: false,
+		// 	Schema:   &openapi3.SchemaRef{Value: &openapi3.Schema{Type: "string"}},
+		// }},
+		// "_profile": &openapi3.ParameterRef{Value: &openapi3.Parameter{
+		// 	Name:     "_profile",
+		// 	In:       "query",
+		// 	Required: false,
+		// 	Schema:   &openapi3.SchemaRef{Value: &openapi3.Schema{Type: "string"}},
+		// }},
+		// "_security": &openapi3.ParameterRef{Value: &openapi3.Parameter{
+		// 	Name:     "_security",
+		// 	In:       "query",
+		// 	Required: false,
+		// 	Schema:   &openapi3.SchemaRef{Value: &openapi3.Schema{Type: "string"}},
+		// }},
+		// "_text": &openapi3.ParameterRef{Value: &openapi3.Parameter{
+		// 	Name:     "_text",
+		// 	In:       "query",
+		// 	Required: false,
+		// 	Schema:   &openapi3.SchemaRef{Value: &openapi3.Schema{Type: "string"}},
+		// }},
+		// "_content": &openapi3.ParameterRef{Value: &openapi3.Parameter{
+		// 	Name:     "_content",
+		// 	In:       "query",
+		// 	Required: false,
+		// 	Schema:   &openapi3.SchemaRef{Value: &openapi3.Schema{Type: "string"}},
+		// }},
+		// "_list": &openapi3.ParameterRef{Value: &openapi3.Parameter{
+		// 	Name:     "_list",
+		// 	In:       "query",
+		// 	Required: false,
+		// 	Schema:   &openapi3.SchemaRef{Value: &openapi3.Schema{Type: "string"}},
+		// }},
+		// "_has": &openapi3.ParameterRef{Value: &openapi3.Parameter{
+		// 	Name:     "_has",
+		// 	In:       "query",
+		// 	Required: false,
+		// 	Schema:   &openapi3.SchemaRef{Value: &openapi3.Schema{Type: "string"}},
+		// }},
+		// "_type": &openapi3.ParameterRef{Value: &openapi3.Parameter{
+		// 	Name:     "_type",
+		// 	In:       "query",
+		// 	Required: false,
+		// 	Schema:   &openapi3.SchemaRef{Value: &openapi3.Schema{Type: "string"}},
+		// }},
 	}
 
 	// Path /
 	contentBundle := openapi3.NewContentWithJSONSchemaRef(openapi3.NewSchemaRef("#/components/schemas/Bundle", nil))
-	respBundle := &openapi3.ResponseRef{Ref: "#/components/schemas/Bundle"}
-	respErr := &openapi3.ResponseRef{Ref: "#/components/schemas/OperationOutcome"}
+	respBundle := &openapi3.ResponseRef{Ref: "#/components/responses/Bundle" + ResposePostfix}
+	respErr := &openapi3.ResponseRef{Ref: "#/components/responses/Error"}
 	responsesBundle := openapi3.Responses{
 		"200": respBundle,
 		"201": respBundle,
@@ -147,7 +236,7 @@ func (g *Generator) initSwagger() {
 	g.Swagger.Paths["/"] = &openapi3.PathItem{
 		Get: &openapi3.Operation{
 			Parameters: openapi3.Parameters{
-				&openapi3.ParameterRef{Ref: "#/components/parameters/search"},
+				NewParameterRef("search"),
 			},
 			Description: "This searches all resources of a particular type using the criteria represented in the parameters.",
 			Tags:        []string{"search"},
@@ -271,19 +360,22 @@ func (g *Generator) convertSchema(src *Type) *openapi3.SchemaRef {
 }
 
 func (g *Generator) createPathes(entity string) {
-	content := openapi3.NewContentWithJSONSchemaRef(openapi3.NewSchemaRef("#/components/schemas/"+entity, nil))
-	respEntity := &openapi3.ResponseRef{Value: &openapi3.Response{
+	// Response
+	g.Swagger.Components.Responses[entity+ResposePostfix] = &openapi3.ResponseRef{Value: &openapi3.Response{
 		Description: ptr.String("OK"),
 		Content:     openapi3.NewContentWithJSONSchemaRef(openapi3.NewSchemaRef("#/components/schemas/"+entity, nil)),
 	}}
-	respErr := &openapi3.ResponseRef{Value: &openapi3.Response{
-		Description: ptr.String("Error"),
-		Content:     openapi3.NewContentWithJSONSchemaRef(openapi3.NewSchemaRef("#/components/schemas/OperationOutcome", nil)),
-	}}
-	respBundle := &openapi3.ResponseRef{Value: &openapi3.Response{
-		Description: ptr.String("OK"),
-		Content:     openapi3.NewContentWithJSONSchemaRef(openapi3.NewSchemaRef("#/components/schemas/Bundle", nil)),
-	}}
+
+	content := openapi3.NewContentWithJSONSchemaRef(openapi3.NewSchemaRef("#/components/schemas/"+entity, nil))
+	requestBody := &openapi3.RequestBodyRef{
+		Value: &openapi3.RequestBody{
+			Required: true,
+			Content:  content,
+		},
+	}
+	respEntity := &openapi3.ResponseRef{Ref: "#/components/responses/" + entity + ResposePostfix}
+	respErr := &openapi3.ResponseRef{Ref: "#/components/responses/Error"}
+	respBundle := &openapi3.ResponseRef{Ref: "#/components/responses/Bundle" + ResposePostfix}
 	responsesEntity := openapi3.Responses{
 		"200": respEntity,
 		"201": respEntity,
@@ -298,7 +390,7 @@ func (g *Generator) createPathes(entity string) {
 	g.Swagger.Paths["/"+entity] = &openapi3.PathItem{
 		Get: &openapi3.Operation{
 			Parameters: openapi3.Parameters{
-				&openapi3.ParameterRef{Ref: "#/components/parameters/search"},
+				NewParameterRef("search"),
 			},
 			Description: "This searches all resources of a particular type using the criteria represented in the parameters.",
 			Tags:        []string{entity},
@@ -313,24 +405,14 @@ func (g *Generator) createPathes(entity string) {
 		Post: &openapi3.Operation{
 			Description: "The create interaction creates a new resource " + entity + " extension",
 			Tags:        []string{entity},
-			RequestBody: &openapi3.RequestBodyRef{
-				Value: &openapi3.RequestBody{
-					Required: true,
-					Content:  content,
-				},
-			},
-			Responses: responsesEntity,
+			RequestBody: requestBody,
+			Responses:   responsesEntity,
 		},
 		Put: &openapi3.Operation{
 			Description: "The update interaction creates or updates a resource " + entity + ".",
 			Tags:        []string{entity},
-			RequestBody: &openapi3.RequestBodyRef{
-				Value: &openapi3.RequestBody{
-					Required: true,
-					Content:  content,
-				},
-			},
-			Responses: responsesEntity,
+			RequestBody: requestBody,
+			Responses:   responsesEntity,
 		},
 	}
 	g.Swagger.Paths["/"+entity+"/{id}"] = &openapi3.PathItem{
@@ -356,45 +438,30 @@ func (g *Generator) createPathes(entity string) {
 		Post: &openapi3.Operation{
 			Description: "The create interaction creates a new resource " + entity + " extension",
 			Tags:        []string{entity},
-			RequestBody: &openapi3.RequestBodyRef{
-				Value: &openapi3.RequestBody{
-					Required: true,
-					Content:  content,
-				},
-			},
-			Responses: responsesEntity,
+			RequestBody: requestBody,
+			Responses:   responsesEntity,
 		},
 		Put: &openapi3.Operation{
 			Description: "The update interaction creates or updates a resource " + entity + ".",
 			Tags:        []string{entity},
-			RequestBody: &openapi3.RequestBodyRef{
-				Value: &openapi3.RequestBody{
-					Required: true,
-					Content:  content,
-				},
-			},
-			Responses: responsesEntity,
+			RequestBody: requestBody,
+			Responses:   responsesEntity,
 		},
 		Patch: &openapi3.Operation{
 			Description: "The patch interaction patches a resource " + entity + ".",
 			Tags:        []string{entity},
-			RequestBody: &openapi3.RequestBodyRef{
-				Value: &openapi3.RequestBody{
-					Required: true,
-					Content:  content,
-				},
-			},
-			Responses: responsesEntity,
+			RequestBody: requestBody,
+			Responses:   responsesEntity,
 		},
 		Delete: &openapi3.Operation{
 			Description: "The patch interaction patches a resource " + entity + ".",
 			Tags:        []string{entity},
-			RequestBody: &openapi3.RequestBodyRef{
-				Value: &openapi3.RequestBody{
-					Required: true,
-					Content:  content,
-				},
-			},
+			// RequestBody: &openapi3.RequestBodyRef{
+			// 	// Value: &openapi3.RequestBody{
+			// 	// 	Required: true,
+			// 	// 	Content:  content,
+			// 	// },
+			// },
 			Responses: openapi3.Responses{
 				"200": &openapi3.ResponseRef{Value: &openapi3.Response{
 					Description: ptr.String("OK"),
